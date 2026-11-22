@@ -147,6 +147,10 @@
 
         function displayProducts(products) {
             var list = document.getElementById('productList');
+            if (products.length === 0) {
+                list.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Thibiriba product adu fangdre.</p>';
+                return;
+            }
             var html = '';
             for (var i = 0; i < products.length; i++) {
                 var p = products[i];
@@ -170,23 +174,32 @@
             list.innerHTML = html;
         }
 
+        function filterProducts() {
+            var query = document.getElementById('searchInput').value.toLowerCase();
+            var category = document.getElementById('categoryFilter').value;
+            var filtered = allProducts.filter(function(p) {
+                var matchesSearch = p.title.toLowerCase().indexOf(query) !== -1;
+                var matchesCategory = (category === 'all') || (p.category === category);
+                return matchesSearch && matchesCategory;
+            });
+            displayProducts(filtered);
+        }
+
         function showDetail(id) {
-            var p = null;
-            for (var i = 0; i < allProducts.length; i++) {
-                if (allProducts[i].id === id) { p = allProducts[i]; break; }
-            }
+            var p = allProducts.find(function(item) { return item.id === id; });
             if (!p) return;
             var priceInINR = Math.round(p.price * 84);
-            var imgUrl = (p.images && p.images.length > 0) ? p.images : p.thumbnail;
+            var imgUrl = (p.images && p.images.length > 0) ? p.images[0] : p.thumbnail;
 
             document.getElementById('detailContent').innerHTML =
                 '<button class="close-btn" onclick="closeDetail()">X</button>' +
                 '<span class="category-tag">' + p.category + '</span>' +
                 '<h2 style="margin-top:5px;">' + p.title + '</h2>' +
-                '<img class="detail-img" src="' + imgUrl + '" alt="' + p.title + '">' +
-                '<p style="font-size:14px; color:#475569; line-height:1.5; margin-bottom:12px;">' + p.description + '</p>' +
-                '<p class="price">Mamal: Rs. ' + priceInINR.toLocaleString('en-IN') + ' (Rating: ' + p.rating + '/5)</p>' +
+                '<img src="' + imgUrl + '" class="detail-img" alt="' + p.title + '">' +
+                '<p style="margin-bottom:15px; line-height:1.5; color:#475569;">' + p.description + '</p>' +
+                '<p class="price">Rs. ' + priceInINR.toLocaleString('en-IN') + '</p>' +
                 '<button class="add-btn" onclick="addToCart(' + p.id + '); closeDetail();">Cart ta Hapsinbiyu</button>';
+
             document.getElementById('detailModal').style.display = 'flex';
         }
 
@@ -194,28 +207,15 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
-        function filterProducts() {
-            var query = document.getElementById('searchInput').value.toLowerCase();
-            var cat = document.getElementById('categoryFilter').value;
-            var filtered = [];
-            for (var i = 0; i < allProducts.length; i++) {
-                var p = allProducts[i];
-                var matchQ = p.title.toLowerCase().indexOf(query) !== -1 || p.category.toLowerCase().indexOf(query) !== -1;
-                var matchC = (cat === 'all') || (p.category === cat);
-                if (matchQ && matchC) filtered.push(p);
-            }
-            displayProducts(filtered);
-        }
-
         function addToCart(id) {
-            for (var i = 0; i < allProducts.length; i++) {
-                if (allProducts[i].id === id) {
-                    cart.push(allProducts[i]);
-                    break;
-                }
+            var p = allProducts.find(function(item) { return item.id === id; });
+            if (!p) return;
+            var existing = cart.find(function(item) { return item.id === id; });
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ id: p.id, title: p.title, price: p.price, thumbnail: p.thumbnail, qty: 1 });
             }
-            document.getElementById('cartCount').innerText = cart.length;
-            alert('Cart ta hapsinjare!');
+            updateCartUI();
         }
 
-        function toggleCart() {
