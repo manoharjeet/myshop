@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eigi Online Shop - 100 Products</title>
+    <title>Eigi Online Shop</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
         body { background-color: #f1f5f9; color: #1e293b; }
@@ -25,7 +25,6 @@
             font-size: 15px; background: white; outline: none;
         }
         #searchInput { width: 100%; max-width: 400px; }
-        #searchInput:focus, #categoryFilter:focus { border-color: #2563eb; }
         .product-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
             gap: 20px; padding: 10px 30px 40px; max-width: 1200px; margin: auto;
@@ -34,9 +33,7 @@
             background: white; border-radius: 10px; padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex;
             flex-direction: column; justify-content: space-between;
-            transition: transform 0.2s;
         }
-        .card:hover { transform: translateY(-4px); }
         .img-box {
             width: 100%; height: 185px; background: #ffffff;
             border: 1px solid #e2e8f0; border-radius: 8px;
@@ -84,7 +81,7 @@
     </div>
 
     <div class="product-grid" id="productList">
-        <p style="text-align:center; grid-column: 1 / -1;">Products 100 amadi image load touri...</p>
+        <p style="text-align:center; grid-column: 1 / -1;">Products load touri...</p>
     </div>
 
     <div class="modal" id="cartModal">
@@ -105,17 +102,18 @@
         var allProducts = [];
         var cart = [];
 
-        function loadProducts() {
-            fetch('https://dummyjson.com')
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    allProducts = data.products;
-                    populateCategories(allProducts);
-                    displayProducts(allProducts);
-                })
-                .catch(function() {
-                    document.getElementById('productList').innerHTML = '<p style="text-align:center; grid-column:1/-1;">Internet connection check toubiyu amadi refresh toubiyu.</p>';
-                });
+        async function loadProducts() {
+            var list = document.getElementById('productList');
+            try {
+                var res = await fetch('https://dummyjson.com');
+                if (!res.ok) throw new Error('API Error: ' + res.status);
+                var data = await res.json();
+                allProducts = data.products;
+                populateCategories(allProducts);
+                displayProducts(allProducts);
+            } catch (err) {
+                list.innerHTML = '<p style="text-align:center; color:red; grid-column:1/-1;">Error: ' + err.message + '. Internet check toubiyu.</p>';
+            }
         }
 
         function populateCategories(products) {
@@ -133,7 +131,7 @@
 
         function displayProducts(products) {
             var list = document.getElementById('productList');
-            if (products.length === 0) {
+            if (!products || products.length === 0) {
                 list.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Thibiriba product adu fangdre.</p>';
                 return;
             }
@@ -175,7 +173,7 @@
             var p = allProducts.find(function(item) { return item.id === id; });
             if (!p) return;
             var priceInINR = Math.round(p.price * 84);
-            var imgUrl = (p.images && p.images.length > 0) ? p.images[0] : p.thumbnail;
+            var imgUrl = (p.images && p.images.length > 0) ? p.images : p.thumbnail;
 
             document.getElementById('detailContent').innerHTML =
                 '<button class="close-btn" onclick="closeDetail()">X</button>' +
@@ -212,3 +210,7 @@
 
         function updateCartUI() {
             var count = 0;
+            var total = 0;
+            var html = '';
+            for (var i = 0; i < cart.length; i++) {
+                var item = cart[i];
