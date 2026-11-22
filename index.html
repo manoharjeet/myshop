@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eigi Online Shop - 100 Products</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; }
+        
+        /* Header */
+        header {
+            background-color: #0f172a; color: white; padding: 15px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .cart-btn {
+            background: #f59e0b; color: #0f172a; border: none; padding: 10px 18px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px;
+        }
+
+        /* Search & Category */
+        .controls {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            margin: 25px 15px;
+        }
+        #searchInput, #categoryFilter {
+            padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 15px; background: white; outline: none;
+        }
+        #searchInput { width: 100%; max-width: 400px; }
+        #searchInput:focus, #categoryFilter:focus { border-color: #2563eb; }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px; padding: 10px 30px 40px; max-width: 1200px; margin: auto;
+        }
+        .card {
+            background: white; border-radius: 10px; padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex;
+            flex-direction: column; justify-content: space-between;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        
+        .img-box {
+            width: 100%; height: 185px; background: #ffffff;
+            border: 1px solid #e2e8f0; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; margin-bottom: 12px; cursor: pointer; padding: 8px;
+        }
+        .img-box img {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+        }
+
+        .category-tag { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
+        .card h3 { font-size: 15px; margin-bottom: 8px; color: #0f172a; }
+        .price { color: #16a34a; font-weight: bold; font-size: 18px; margin-bottom: 12px; }
+        .add-btn {
+            background: #2563eb; color: white; border: none; padding: 10px;
+            border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold;
+        }
+        .add-btn:hover { background: #1d4ed8; }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.65); justify-content: center; align-items: center; z-index: 200;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 10px;
+            width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto;
+        }
+        .cart-item {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 12px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; gap: 10px;
+        }
+        .cart-item img { width: 45px; height: 45px; object-fit: contain; }
+        .close-btn { background: #ef4444; color: white; border: none; padding: 6px 12px; cursor: pointer; float: right; border-radius: 4px; font-weight: bold; }
+        .detail-img { width: 100%; max-height: 250px; object-fit: contain; margin: 15px 0; background: #f8fafc; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>Eigi Online Shop</h2>
+        <button class="cart-btn" onclick="toggleCart()">Cart (<span id="cartCount">0</span>)</button>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Product ming thibiyu (e.g. phone, laptop, shoes)..." onkeyup="filterProducts()">
+        <select id="categoryFilter" onchange="filterProducts()">
+            <option value="all">Category Pumnamak</option>
+        </select>
+    </div>
+
+    <div class="product-grid" id="productList">
+        <p style="text-align:center; grid-column: 1 / -1;">Products 100 amadi image load touri...</p>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="toggleCart()">X</button>
+            <h3>Nanggi Shopping Cart</h3>
+            <div id="cartItems"></div>
+            <h4 style="margin-top: 15px;">Apunba Mamal: Rs. <span id="totalPrice">0</span></h4>
+            <button class="add-btn" style="margin-top:15px; background:#16a34a;" onclick="checkout()">Order Confirm Toubiyu</button>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content" id="detailContent"></div>
+    </div>
+
+    <script>
+        var allProducts = [];
+        var cart = [];
+
+        function loadProducts() {
+            fetch('https://dummyjson.com')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    allProducts = data.products;
+                    populateCategories(allProducts);
+                    displayProducts(allProducts);
+                })
+                .catch(function() {
+                    document.getElementById('productList').innerHTML = '<p style="text-align:center; grid-column:1/-1;">Internet connection check toubiyu amadi refresh toubiyu.</p>';
+                });
+        }
+
+        function populateCategories(products) {
+            var select = document.getElementById('categoryFilter');
+            var categories = [];
+            for (var i = 0; i < products.length; i++) {
+                if (categories.indexOf(products[i].category) === -1) {
+                    categories.push(products[i].category);
+                }
+            }
+            for (var c = 0; c < categories.length; c++) {
+                select.innerHTML += '<option value="' + categories[c] + '">' + categories[c].toUpperCase() + '</option>';
+            }
+        }
+
+        function displayProducts(products) {
+            var list = document.getElementById('productList');
+            var html = '';
+            for (var i = 0; i < products.length; i++) {
+                var p = products[i];
+                var priceInINR = Math.round(p.price * 84);
+                var imgUrl = p.thumbnail;
+
+                html += '<div class="card">' +
+                    '<div>' +
+                        '<div class="img-box" onclick="showDetail(' + p.id + ')">' +
+                            '<img src="' + imgUrl + '" alt="' + p.title + '" loading="lazy">' +
+                        '</div>' +
+                        '<div class="category-tag">' + p.category + '</div>' +
+                        '<h3>' + p.title + '</h3>' +
+                    '</div>' +
+                    '<div>' +
+                        '<p class="price">Rs. ' + priceInINR.toLocaleString('en-IN') + '</p>' +
+                        '<button class="add-btn" onclick="addToCart(' + p.id + ')">Cart ta Hapsinbiyu</button>' +
+                    '</div>' +
+                '</div>';
+            }
+            list.innerHTML = html;
+        }
+
+        function showDetail(id) {
+            var p = null;
+            for (var i = 0; i < allProducts.length; i++) {
+                if (allProducts[i].id === id) { p = allProducts[i]; break; }
+            }
+            if (!p) return;
+            var priceInINR = Math.round(p.price * 84);
+            var imgUrl = (p.images && p.images.length > 0) ? p.images : p.thumbnail;
+
+            document.getElementById('detailContent').innerHTML =
+                '<button class="close-btn" onclick="closeDetail()">X</button>' +
+                '<span class="category-tag">' + p.category + '</span>' +
+                '<h2 style="margin-top:5px;">' + p.title + '</h2>' +
+                '<img class="detail-img" src="' + imgUrl + '" alt="' + p.title + '">' +
+                '<p style="font-size:14px; color:#475569; line-height:1.5; margin-bottom:12px;">' + p.description + '</p>' +
+                '<p class="price">Mamal: Rs. ' + priceInINR.toLocaleString('en-IN') + ' (Rating: ' + p.rating + '/5)</p>' +
+                '<button class="add-btn" onclick="addToCart(' + p.id + '); closeDetail();">Cart ta Hapsinbiyu</button>';
+            document.getElementById('detailModal').style.display = 'flex';
+        }
+
+        function closeDetail() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        function filterProducts() {
+            var query = document.getElementById('searchInput').value.toLowerCase();
+            var cat = document.getElementById('categoryFilter').value;
+            var filtered = [];
+            for (var i = 0; i < allProducts.length; i++) {
+                var p = allProducts[i];
+                var matchQ = p.title.toLowerCase().indexOf(query) !== -1 || p.category.toLowerCase().indexOf(query) !== -1;
+                var matchC = (cat === 'all') || (p.category === cat);
+                if (matchQ && matchC) filtered.push(p);
+            }
+            displayProducts(filtered);
+        }
+
+        function addToCart(id) {
+            for (var i = 0; i < allProducts.length; i++) {
+                if (allProducts[i].id === id) {
+                    cart.push(allProducts[i]);
+                    break;
+                }
+            }
+            document.getElementById('cartCount').innerText = cart.length;
+            alert('Cart ta hapsinjare!');
+        }
+
+        function toggleCart() {
