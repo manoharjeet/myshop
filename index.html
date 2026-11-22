@@ -33,9 +33,11 @@
             background: white; border-radius: 10px; padding: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex;
             flex-direction: column; justify-content: space-between;
+            transition: transform 0.2s;
         }
+        .card:hover { transform: translateY(-4px); }
         .img-box {
-            width: 100%; height: 185px; background: #ffffff;
+            width: 100%; height: 185px; background: #f8fafc;
             border: 1px solid #e2e8f0; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; margin-bottom: 12px; cursor: pointer; padding: 8px;
@@ -97,18 +99,31 @@
     </div>
 
     <script>
-        var backupProducts = [
-            { id: 1, title: "iPhone 15 Pro Max", category: "smartphones", price: 1499, description: "Titanium design, A17 Pro chip amadi pro camera system.", thumbnail: "https://unsplash.com" },
-            { id: 2, title: "MacBook Air M2", category: "laptops", price: 1199, description: "Supercharged by M2 chip, 13.6-inch Liquid Retina display.", thumbnail: "https://unsplash.com" },
-            { id: 3, title: "Nike Air Running Shoes", category: "shoes", price: 120, description: "Lightweight amadi comfortable running shoes.", thumbnail: "https://unsplash.com" },
-            { id: 4, title: "Sony WH-1000XM5 Headphones", category: "electronics", price: 349, description: "Industry-leading noise canceling wireless headphones.", thumbnail: "https://unsplash.com" },
-            { id: 5, title: "Classic Leather Watch", category: "watches", price: 180, description: "Water-resistant minimalist analog watch.", thumbnail: "https://unsplash.com" },
-            { id: 6, title: "Cotton Casual T-Shirt", category: "clothing", price: 25, description: "100% pure soft cotton everyday t-shirt.", thumbnail: "https://unsplash.com" },
-            { id: 7, title: "Smart Fitness Band", category: "electronics", price: 59, description: "Heart rate, step counter amadi sleep tracking.", thumbnail: "https://unsplash.com" },
-            { id: 8, title: "Travel Backpack 35L", category: "bags", price: 65, description: "Waterproof laptop compartment yaoba travel bag.", thumbnail: "https://unsplash.com" }
+        function makeCardImg(bgColor, emoji, label) {
+            var svg = '<svg xmlns="http://w3.org" width="300" height="220" viewBox="0 0 300 220">' +
+                '<rect width="300" height="220" rx="12" fill="' + bgColor + '"/>' +
+                '<text x="150" y="105" font-size="72" text-anchor="middle" dominant-baseline="middle">' + emoji + '</text>' +
+                '<text x="150" y="175" font-size="16" font-family="Arial" font-weight="bold" fill="#1e293b" text-anchor="middle">' + label + '</text>' +
+                '</svg>';
+            return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+        }
+
+        var localProducts = [
+            { id: 1, title: "iPhone 15 Pro Max (256GB)", category: "smartphones", price: 134900, description: "Titanium design, A17 Pro chip amadi pro camera system.", thumbnail: makeCardImg("#dbeafe", "📱", "iPhone 15 Pro") },
+            { id: 2, title: "Samsung Galaxy S24 Ultra", category: "smartphones", price: 129999, description: "Galaxy AI, 200MP camera amadi built-in S Pen.", thumbnail: makeCardImg("#e0e7ff", "📲", "Galaxy S24 Ultra") },
+            { id: 3, title: "MacBook Air M2 (13-inch)", category: "laptops", price: 99900, description: "M2 chip, 8GB RAM, 256GB SSD, Liquid Retina display.", thumbnail: makeCardImg("#f1f5f9", "💻", "MacBook Air M2") },
+            { id: 4, title: "HP Pavilion Gaming Laptop", category: "laptops", price: 68500, description: "Ryzen 5, 16GB RAM, RTX Graphics, 144Hz display.", thumbnail: makeCardImg("#dcfce7", "🖥️", "HP Gaming Laptop") },
+            { id: 5, title: "Nike Air Running Shoes", category: "shoes", price: 4999, description: "Lightweight breathable mesh running shoes.", thumbnail: makeCardImg("#fee2e2", "👟", "Nike Air Shoes") },
+            { id: 6, title: "Adidas Sports Sneakers", category: "shoes", price: 3799, description: "Daily comfort amadi durable rubber sole.", thumbnail: makeCardImg("#ffedd5", "👟", "Adidas Sneakers") },
+            { id: 7, title: "Sony WH-1000XM5 Headphones", category: "electronics", price: 26990, description: "Active noise canceling wireless over-ear headphones.", thumbnail: makeCardImg("#fae8ff", "🎧", "Sony Headphones") },
+            { id: 8, title: "Apple Watch Series 9", category: "watches", price: 41900, description: "Always-on Retina display, heart rate & fitness tracker.", thumbnail: makeCardImg("#fef3c7", "⌚", "Apple Watch S9") },
+            { id: 9, title: "Cotton Casual T-Shirt", category: "clothing", price: 699, description: "100% pure soft combed cotton everyday t-shirt.", thumbnail: makeCardImg("#ccfbf1", "👕", "Cotton T-Shirt") },
+            { id: 10, title: "Denim Slim Fit Jeans", category: "clothing", price: 1499, description: "Stretchable comfortable dark blue denim jeans.", thumbnail: makeCardImg("#e0f2fe", "👖", "Denim Jeans") },
+            { id: 11, title: "Travel Laptop Backpack 35L", category: "bags", price: 1299, description: "Water-resistant backpack with padded laptop sleeve.", thumbnail: makeCardImg("#fce7f3", "🎒", "Travel Backpack") },
+            { id: 12, title: "JBL Flip 6 Bluetooth Speaker", category: "electronics", price: 9999, description: "IP67 waterproof portable speaker with deep bass.", thumbnail: makeCardImg("#fef9c3", "🔊", "JBL Speaker") }
         ];
 
-        var allProducts = backupProducts;
+        var allProducts = localProducts;
         var cart = [];
 
         function initShop() {
@@ -119,7 +134,17 @@
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (data && data.products && data.products.length > 0) {
-                        allProducts = data.products;
+                        var apiItems = data.products.map(function(p) {
+                            return {
+                                id: p.id + 100,
+                                title: p.title,
+                                category: p.category,
+                                price: Math.round(p.price * 84),
+                                description: p.description,
+                                thumbnail: p.thumbnail
+                            };
+                        });
+                        allProducts = localProducts.concat(apiItems);
                         document.getElementById('categoryFilter').innerHTML = '<option value="all">Category Pumnamak</option>';
                         populateCategories(allProducts);
                         displayProducts(allProducts);
@@ -141,45 +166,3 @@
             }
         }
 
-        function displayProducts(products) {
-            var list = document.getElementById('productList');
-            if (!products || products.length === 0) {
-                list.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Thibiriba product adu fangdre.</p>';
-                return;
-            }
-            var html = '';
-            for (var i = 0; i < products.length; i++) {
-                var p = products[i];
-                var priceInINR = Math.round(p.price * 84);
-                var imgUrl = p.thumbnail;
-
-                html += '<div class="card">' +
-                    '<div>' +
-                        '<div class="img-box" onclick="showDetail(' + p.id + ')">' +
-                            '<img src="' + imgUrl + '" alt="' + p.title + '" loading="lazy">' +
-                        '</div>' +
-                        '<div class="category-tag">' + p.category + '</div>' +
-                        '<h3>' + p.title + '</h3>' +
-                    '</div>' +
-                    '<div>' +
-                        '<p class="price">Rs. ' + priceInINR.toLocaleString('en-IN') + '</p>' +
-                        '<button class="add-btn" onclick="addToCart(' + p.id + ')">Cart ta Hapsinbiyu</button>' +
-                    '</div>' +
-                '</div>';
-            }
-            list.innerHTML = html;
-        }
-
-        function filterProducts() {
-            var query = document.getElementById('searchInput').value.toLowerCase();
-            var category = document.getElementById('categoryFilter').value;
-            var filtered = allProducts.filter(function(p) {
-                var matchesSearch = p.title.toLowerCase().indexOf(query) !== -1;
-                var matchesCategory = (category === 'all') || (p.category === category);
-                return matchesSearch && matchesCategory;
-            });
-            displayProducts(filtered);
-        }
-
-        function showDetail(id) {
-            var p = allProducts.find(function(item) { return item.id === id; });
