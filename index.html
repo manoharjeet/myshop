@@ -80,9 +80,7 @@
         </select>
     </div>
 
-    <div class="product-grid" id="productList">
-        <p style="text-align:center; grid-column: 1 / -1;">Products load touri...</p>
-    </div>
+    <div class="product-grid" id="productList"></div>
 
     <div class="modal" id="cartModal">
         <div class="modal-content">
@@ -99,21 +97,35 @@
     </div>
 
     <script>
-        var allProducts = [];
+        var backupProducts = [
+            { id: 1, title: "iPhone 15 Pro Max", category: "smartphones", price: 1499, description: "Titanium design, A17 Pro chip amadi pro camera system.", thumbnail: "https://unsplash.com" },
+            { id: 2, title: "MacBook Air M2", category: "laptops", price: 1199, description: "Supercharged by M2 chip, 13.6-inch Liquid Retina display.", thumbnail: "https://unsplash.com" },
+            { id: 3, title: "Nike Air Running Shoes", category: "shoes", price: 120, description: "Lightweight amadi comfortable running shoes.", thumbnail: "https://unsplash.com" },
+            { id: 4, title: "Sony WH-1000XM5 Headphones", category: "electronics", price: 349, description: "Industry-leading noise canceling wireless headphones.", thumbnail: "https://unsplash.com" },
+            { id: 5, title: "Classic Leather Watch", category: "watches", price: 180, description: "Water-resistant minimalist analog watch.", thumbnail: "https://unsplash.com" },
+            { id: 6, title: "Cotton Casual T-Shirt", category: "clothing", price: 25, description: "100% pure soft cotton everyday t-shirt.", thumbnail: "https://unsplash.com" },
+            { id: 7, title: "Smart Fitness Band", category: "electronics", price: 59, description: "Heart rate, step counter amadi sleep tracking.", thumbnail: "https://unsplash.com" },
+            { id: 8, title: "Travel Backpack 35L", category: "bags", price: 65, description: "Waterproof laptop compartment yaoba travel bag.", thumbnail: "https://unsplash.com" }
+        ];
+
+        var allProducts = backupProducts;
         var cart = [];
 
-        async function loadProducts() {
-            var list = document.getElementById('productList');
-            try {
-                var res = await fetch('https://dummyjson.com');
-                if (!res.ok) throw new Error('API Error: ' + res.status);
-                var data = await res.json();
-                allProducts = data.products;
-                populateCategories(allProducts);
-                displayProducts(allProducts);
-            } catch (err) {
-                list.innerHTML = '<p style="text-align:center; color:red; grid-column:1/-1;">Error: ' + err.message + '. Internet check toubiyu.</p>';
-            }
+        function initShop() {
+            populateCategories(allProducts);
+            displayProducts(allProducts);
+
+            fetch('https://dummyjson.com')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data && data.products && data.products.length > 0) {
+                        allProducts = data.products;
+                        document.getElementById('categoryFilter').innerHTML = '<option value="all">Category Pumnamak</option>';
+                        populateCategories(allProducts);
+                        displayProducts(allProducts);
+                    }
+                })
+                .catch(function() {});
         }
 
         function populateCategories(products) {
@@ -171,46 +183,3 @@
 
         function showDetail(id) {
             var p = allProducts.find(function(item) { return item.id === id; });
-            if (!p) return;
-            var priceInINR = Math.round(p.price * 84);
-            var imgUrl = (p.images && p.images.length > 0) ? p.images : p.thumbnail;
-
-            document.getElementById('detailContent').innerHTML =
-                '<button class="close-btn" onclick="closeDetail()">X</button>' +
-                '<span class="category-tag">' + p.category + '</span>' +
-                '<h2 style="margin-top:5px;">' + p.title + '</h2>' +
-                '<img src="' + imgUrl + '" class="detail-img" alt="' + p.title + '">' +
-                '<p style="margin-bottom:15px; line-height:1.5; color:#475569;">' + p.description + '</p>' +
-                '<p class="price">Rs. ' + priceInINR.toLocaleString('en-IN') + '</p>' +
-                '<button class="add-btn" onclick="addToCart(' + p.id + '); closeDetail();">Cart ta Hapsinbiyu</button>';
-
-            document.getElementById('detailModal').style.display = 'flex';
-        }
-
-        function closeDetail() {
-            document.getElementById('detailModal').style.display = 'none';
-        }
-
-        function addToCart(id) {
-            var p = allProducts.find(function(item) { return item.id === id; });
-            if (!p) return;
-            var existing = cart.find(function(item) { return item.id === id; });
-            if (existing) {
-                existing.qty += 1;
-            } else {
-                cart.push({ id: p.id, title: p.title, price: p.price, thumbnail: p.thumbnail, qty: 1 });
-            }
-            updateCartUI();
-        }
-
-        function removeFromCart(id) {
-            cart = cart.filter(function(item) { return item.id !== id; });
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            var count = 0;
-            var total = 0;
-            var html = '';
-            for (var i = 0; i < cart.length; i++) {
-                var item = cart[i];
