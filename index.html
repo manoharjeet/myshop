@@ -7,8 +7,6 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
         body { background-color: #f1f5f9; color: #1e293b; }
-        
-        /* Header */
         header {
             background-color: #0f172a; color: white; padding: 15px 30px;
             display: flex; justify-content: space-between; align-items: center;
@@ -18,8 +16,6 @@
             background: #f59e0b; color: #0f172a; border: none; padding: 10px 18px;
             border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px;
         }
-
-        /* Search & Category */
         .controls {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
             margin: 25px 15px;
@@ -30,8 +26,6 @@
         }
         #searchInput { width: 100%; max-width: 400px; }
         #searchInput:focus, #categoryFilter:focus { border-color: #2563eb; }
-
-        /* Product Grid */
         .product-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
             gap: 20px; padding: 10px 30px 40px; max-width: 1200px; margin: auto;
@@ -43,17 +37,13 @@
             transition: transform 0.2s;
         }
         .card:hover { transform: translateY(-4px); }
-        
         .img-box {
             width: 100%; height: 185px; background: #ffffff;
             border: 1px solid #e2e8f0; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; margin-bottom: 12px; cursor: pointer; padding: 8px;
         }
-        .img-box img {
-            max-width: 100%; max-height: 100%; object-fit: contain;
-        }
-
+        .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .category-tag { font-size: 11px; color: #64748b; text-transform: uppercase; margin-bottom: 4px; font-weight: bold; }
         .card h3 { font-size: 15px; margin-bottom: 8px; color: #0f172a; }
         .price { color: #16a34a; font-weight: bold; font-size: 18px; margin-bottom: 12px; }
@@ -62,8 +52,6 @@
             border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold;
         }
         .add-btn:hover { background: #1d4ed8; }
-
-        /* Modal */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.65); justify-content: center; align-items: center; z-index: 200;
@@ -99,7 +87,6 @@
         <p style="text-align:center; grid-column: 1 / -1;">Products 100 amadi image load touri...</p>
     </div>
 
-    <!-- Cart Modal -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
             <button class="close-btn" onclick="toggleCart()">X</button>
@@ -110,7 +97,6 @@
         </div>
     </div>
 
-    <!-- Product Detail Modal -->
     <div class="modal" id="detailModal">
         <div class="modal-content" id="detailContent"></div>
     </div>
@@ -219,3 +205,10 @@
             updateCartUI();
         }
 
+        function removeFromCart(id) {
+            cart = cart.filter(function(item) { return item.id !== id; });
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            var count = 0;
