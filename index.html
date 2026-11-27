@@ -78,9 +78,8 @@
 
 
 
-
-    <script>
-        const WHATSAPP_NUMBER = "8413960348"; // Nanggi 91 + 10-digit WhatsApp number hapchinbiyu
+        <script>
+        const WHATSAPP_NUMBER = "918413960348";
         let allProducts = [];
         let adminPassword = sessionStorage.getItem('adminPassword') || '';
 
@@ -121,7 +120,7 @@
             grid.innerHTML = filtered.length ? '' : '<p>Product amatta fangde.</p>';
             filtered.forEach(p => {
                 const msg = encodeURIComponent(`Khurumjari! Ei "${p.name}" (Mamal: ₹${p.price}) asi order touba pammi.`);
-                const waLink = `https://wa.me{WHATSAPP_NUMBER}?text=${msg}`;
+                const waLink = "https://whatsapp.com" + WHATSAPP_NUMBER + "&text=" + msg;
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
